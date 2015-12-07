@@ -118,7 +118,7 @@ public class PositionSimilarity extends Similarity {
                     Loggers.getLogger(this.getClass()).debug("\n seekExact failed \n");
                     return maxPosition;
                 }
-                PostingsEnum dpEnum = termsEnum.postings(null, null);
+                PostingsEnum dpEnum = termsEnum.postings(null, PostingsEnum.ALL);
                 dpEnum.nextDoc();
                 dpEnum.nextPosition();
                 BytesRef payload = dpEnum.getPayload();
