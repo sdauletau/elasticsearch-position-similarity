@@ -4,7 +4,7 @@
   Author: Sergei Dauletau
   -->
   
-# Elasticsearch position similarity (aka boost by position) plugin
+# Elasticsearch "boost by position" plugin
 
 This plugin allows to boost search relevance by a position of a word in a field.
 
