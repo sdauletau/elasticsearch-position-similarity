@@ -68,7 +68,6 @@ public class PositionSimilarity extends Similarity {
     private final class PositionSimScorer extends SimScorer {
         private final PositionStats stats;
         private final LeafReaderContext context;
-        private float totalScore;
         private final List<Explanation> explanations = new ArrayList<>();
 
         PositionSimScorer(PositionStats stats, LeafReaderContext context) throws IOException {
@@ -85,6 +84,7 @@ public class PositionSimilarity extends Similarity {
          */
         @Override
         public float score(int doc, float freq) {
+            float totalScore = 0.0f;
             int i = 0;
             while (i < stats.termStats.length) {
                 totalScore += scoreTerm(doc, stats.termStats[i].term());
@@ -115,7 +115,7 @@ public class PositionSimilarity extends Similarity {
                 Terms terms = context.reader().getTermVector(doc, stats.field);
                 TermsEnum termsEnum = terms.iterator();
                 if (!termsEnum.seekExact(term)) {
-                    Loggers.getLogger(this.getClass()).debug("\n seekExact failed \n");
+                    Loggers.getLogger(this.getClass()).error("\n seekExact failed \n");
                     return maxPosition;
                 }
                 PostingsEnum dpEnum = termsEnum.postings(null, PostingsEnum.ALL);
@@ -124,7 +124,7 @@ public class PositionSimilarity extends Similarity {
                 BytesRef payload = dpEnum.getPayload();
                 return PayloadHelper.decodeInt(payload.bytes, payload.offset);
             } catch (Exception ex) {
-                Loggers.getLogger(this.getClass()).debug("\n exception \n", ex);
+                Loggers.getLogger(this.getClass()).error("\n exception \n", ex);
                 return maxPosition;
             }
         }
@@ -169,8 +169,6 @@ public class PositionSimilarity extends Similarity {
          */
         @Override
         public float getValueForNormalization() {
-            Loggers.getLogger(this.getClass()).debug("\n getValueForNormalization called \n");
-
             return queryBoost * queryBoost;
         }
 
@@ -182,8 +180,6 @@ public class PositionSimilarity extends Similarity {
          */
         @Override
         public void normalize(float queryNorm, float topLevelBoost) {
-            Loggers.getLogger(this.getClass()).debug("\n normalize called \n");
-
             this.totalBoost = queryBoost * topLevelBoost;
         }
     }
