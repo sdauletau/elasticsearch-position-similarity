@@ -12,7 +12,6 @@
 
     <name>elasticsearch-position-similarity</name>
     <artifactId>elasticsearch-position-similarity</artifactId>
-    <version>${parent.version}</version>
     <description>Provides scoring based on matching a term or a phrase relative to a position of the term in a searched field.</description>
     
     <licenses>
