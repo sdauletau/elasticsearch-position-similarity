@@ -8,7 +8,11 @@
 
 This plugin allows to boost search relevance by a position of a word in a field.
 
-## Installation
+## Build
+
+mvn clean package
+
+## Install
 
 Run ./scripts/install-plugin.sh
 
