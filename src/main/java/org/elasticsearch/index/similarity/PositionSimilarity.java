@@ -47,8 +47,8 @@ public class PositionSimilarity extends Similarity {
     }
 
     @Override
-    public final SimWeight computeWeight(float queryBoost, CollectionStatistics collectionStats, TermStatistics... termStats) {
-        return new PositionStats(queryBoost, collectionStats.field(), termStats);
+        public SimWeight computeWeight(CollectionStatistics collectionStatistics, TermStatistics... termStatisticses) {
+        return new PositionStats(collectionStatistics.field(), termStatisticses);
     }
 
     @Override
@@ -155,12 +155,10 @@ public class PositionSimilarity extends Similarity {
 
     private static class PositionStats extends SimWeight {
         private final String field;
-        private final float queryBoost;
         private final TermStatistics[] termStats;
         private float totalBoost;
 
-        public PositionStats(float queryBoost, String field, TermStatistics... termStats) {
-            this.queryBoost = queryBoost;
+        public PositionStats(String field, TermStatistics... termStats) {
             this.field = field;
             this.termStats = termStats;
         }
@@ -173,7 +171,8 @@ public class PositionSimilarity extends Similarity {
          */
         @Override
         public float getValueForNormalization() {
-            return queryBoost * queryBoost;
+            // do not use any query normalization
+            return 1.0f;
         }
 
         /** Assigns the query normalization factor and boost from parent queries to this.
@@ -183,8 +182,8 @@ public class PositionSimilarity extends Similarity {
          * the topLevelBoost (e.g. from an outer BooleanQuery) into its score.
          */
         @Override
-        public void normalize(float queryNorm, float topLevelBoost) {
-            this.totalBoost = queryBoost * topLevelBoost;
+        public void normalize(float queryNorm, float boost) {
+            this.totalBoost = queryNorm * boost;
         }
     }
 }
