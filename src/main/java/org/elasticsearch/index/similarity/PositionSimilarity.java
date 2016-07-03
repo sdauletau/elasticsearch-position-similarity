@@ -115,16 +115,20 @@ public class PositionSimilarity extends Similarity {
                 Terms terms = context.reader().getTermVector(doc, stats.field);
                 TermsEnum termsEnum = terms.iterator();
                 if (!termsEnum.seekExact(term)) {
-                    Loggers.getLogger(this.getClass()).error("\n seekExact failed \n");
+                    Loggers.getLogger(this.getClass()).error("seekExact failed, returning default position = " + maxPosition + " in field = " + stats.field);
                     return maxPosition;
                 }
                 PostingsEnum dpEnum = termsEnum.postings(null, PostingsEnum.ALL);
                 dpEnum.nextDoc();
                 dpEnum.nextPosition();
                 BytesRef payload = dpEnum.getPayload();
+                if (payload == null) {
+                    Loggers.getLogger(this.getClass()).error("getPayload failed, returning default position = " + maxPosition + " in field = " + stats.field);
+                    return maxPosition;
+                }
                 return PayloadHelper.decodeInt(payload.bytes, payload.offset);
             } catch (Exception ex) {
-                Loggers.getLogger(this.getClass()).error("\n exception \n", ex);
+                Loggers.getLogger(this.getClass()).error("Unexpected exception, returning default position = " + maxPosition + " in field = " + stats.field, ex);
                 return maxPosition;
             }
         }
