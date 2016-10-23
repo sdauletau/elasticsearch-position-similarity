@@ -41,28 +41,20 @@ public class PositionSimilarity extends Similarity {
     }
 
     @Override
-    public long computeNorm(FieldInvertState fieldInvertState) {
+    public long computeNorm(FieldInvertState state) {
         // ignore field boost and length during indexing
         return 1;
     }
 
     @Override
-        public SimWeight computeWeight(CollectionStatistics collectionStatistics, TermStatistics... termStatisticses) {
-        return new PositionStats(collectionStatistics.field(), termStatisticses);
+        public SimWeight computeWeight(CollectionStatistics collectionStats, TermStatistics... termStats) {
+        return new PositionStats(collectionStats.field(), termStats);
     }
 
     @Override
-    public final SimScorer simScorer(SimWeight stats, LeafReaderContext context) throws IOException {
-        PositionStats positionStats = (PositionStats) stats;
+    public final SimScorer simScorer(SimWeight weight, LeafReaderContext context) throws IOException {
+        PositionStats positionStats = (PositionStats) weight;
         return new PositionSimScorer(positionStats, context);
-    }
-
-    public float sloppyFreq(int distance) {
-        return 1.0f / (distance + 1);
-    }
-
-    public float scorePayload(int doc, int start, int end, BytesRef payload) {
-        return 1.0f;
     }
 
     private final class PositionSimScorer extends SimScorer {
@@ -135,12 +127,12 @@ public class PositionSimilarity extends Similarity {
 
         @Override
         public float computeSlopFactor(int distance) {
-            return sloppyFreq(distance);
+            return 1.0f / (distance + 1);
         }
 
         @Override
         public float computePayloadFactor(int doc, int start, int end, BytesRef payload) {
-            return scorePayload(doc, start, end, payload);
+            return 1.0f;
         }
 
         @Override
@@ -179,7 +171,7 @@ public class PositionSimilarity extends Similarity {
          * <p>
          * NOTE: a Similarity implementation might not use this normalized value at all,
          * it's not required. However, it's usually a good idea to at least incorporate
-         * the topLevelBoost (e.g. from an outer BooleanQuery) into its score.
+         * the boost into its score.
          */
         @Override
         public void normalize(float queryNorm, float boost) {
