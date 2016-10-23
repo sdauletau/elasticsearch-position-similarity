@@ -471,7 +471,7 @@ curl -s -XPOST "http://localhost:9200/test_index/_refresh"
 ```
 
 doc id|foo freq|doc length|foo position
-------|--------|-----------------------
+------|--------|----------|------------
 1|1|2|1
 2|2|5|0
 3|2|4|2
