@@ -22,6 +22,6 @@ Re-start elasticsearch
 
 Run ./examples/position-similarity.sh
 
-## Implementation Details
+## Advanced Scoring with Elasticsearch Similarity Plugins
 
-https://github.com/sdauletau/elasticsearch-position-similarity/blob/master/Advanced%20Scoring%20with%20Similarity%20Plugins.md
+https://github.com/sdauletau/elasticsearch-position-similarity/blob/master/Advanced%20Scoring%20with%20Elasticsearch%20Similarity%20Plugins.md
