@@ -299,6 +299,7 @@ private static class PositionStats extends SimWeight {
 ## PositionSimScorer extends SimScorer
 
 The second class will extend SimScorer and will allow us to compute custom score by overriding `score` method.
+The actual implementation is available at https://github.com/sdauletau/elasticsearch-position-similarity/blob/master/src/main/java/org/elasticsearch/index/similarity/PositionSimilarity.java.
 
 
 ```java
@@ -314,7 +315,8 @@ private final class PositionSimScorer extends SimScorer {
 
     @Override
     public float score(int doc, float freq) {
-        return 1.0f;
+        // calculate score
+        // return score
     }
 
     @Override
@@ -375,13 +377,13 @@ public class PositionSimilarityPlugin extends Plugin {
 ## Build and Install Plugin
 
 ```bash
-git clone -b 2.3.3 https://github.com/sdauletau/elasticsearch-position-similarity.git elasticsearch-position-similarity
+git clone -b 2.4.3 https://github.com/sdauletau/elasticsearch-position-similarity.git elasticsearch-position-similarity
 
 cd elasticsearch-position-similarity
 
 mvn clean package
 
-/usr/local/opt/elasticsearch-2.3.3/bin/plugin install file:./target/releases/elasticsearch-position-similarity-2.3.3.zip
+/usr/local/opt/elasticsearch-2.4.3/bin/plugin install file:./target/releases/elasticsearch-position-similarity-2.4.3.zip
 ```
 
 **IMPORTANT**: Restart Elasticsearch.
