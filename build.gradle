@@ -12,14 +12,27 @@
  * limitations under the License.
  */
 
-package org.elasticsearch.plugin;
-
-import org.elasticsearch.index.IndexModule;
-import org.elasticsearch.index.similarity.PositionSimilarityProvider;
-import org.elasticsearch.plugins.Plugin;
-
-public class PositionSimilarityPlugin extends Plugin {
-    public void onIndexModule(IndexModule indexModule) {
-        indexModule.addSimilarity("position-similarity", PositionSimilarityProvider::new);
+buildscript {
+    repositories {
+        mavenCentral()
+        jcenter()
+    }
+    dependencies {
+        classpath "org.elasticsearch.gradle:build-tools:5.1.1"
     }
 }
+
+apply plugin: 'idea'
+apply plugin: 'elasticsearch.esplugin'
+
+version = '5.1.1'
+
+esplugin {
+    description 'Provides scoring based on matching a term or a phrase relative to a position of the term in a searched field.'
+    version project.version
+    name project.name
+    classname 'org.elasticsearch.plugin.PositionSimilarityPlugin'
+}
+
+test.enabled = false
+integTest.enabled = false

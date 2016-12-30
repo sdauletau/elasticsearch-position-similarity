@@ -1,3 +1,3 @@
 #!/bin/sh
 
-/usr/local/opt/elasticsearch-2.4.3/bin/plugin install file:./target/releases/elasticsearch-position-similarity-2.4.3.zip
+/usr/local/opt/elasticsearch-5.1.1/bin/elasticsearch-plugin install file:///`pwd`/build/distributions/elasticsearch-position-similarity-5.1.1.zip

@@ -10,7 +10,7 @@ This plugin allows to boost search relevance by a position of a word in a field.
 
 ## Build
 
-mvn clean package
+gradle clean assemble
 
 ## Install
 
@@ -24,4 +24,4 @@ Run ./examples/position-similarity.sh
 
 ## Implementation Details
 
-https://github.com/sdauletau/elasticsearch-position-similarity/blob/2.4.3/Advanced%20Scoring%20with%20Similarity%20Plugins.md
+https://github.com/sdauletau/elasticsearch-position-similarity/blob/5.1.1/Advanced%20Scoring%20with%20Similarity%20Plugins.md
