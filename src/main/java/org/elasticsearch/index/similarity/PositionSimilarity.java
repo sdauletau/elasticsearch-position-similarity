@@ -15,7 +15,11 @@
 package org.elasticsearch.index.similarity;
 
 import org.apache.lucene.analysis.payloads.PayloadHelper;
-import org.apache.lucene.index.*;
+import org.apache.lucene.index.FieldInvertState;
+import org.apache.lucene.index.LeafReaderContext;
+import org.apache.lucene.index.PostingsEnum;
+import org.apache.lucene.index.Terms;
+import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.search.CollectionStatistics;
 import org.apache.lucene.search.Explanation;
 import org.apache.lucene.search.TermStatistics;
@@ -107,7 +111,8 @@ public class PositionSimilarity extends Similarity {
                 Terms terms = context.reader().getTermVector(doc, stats.field);
                 TermsEnum termsEnum = terms.iterator();
                 if (!termsEnum.seekExact(term)) {
-                    Loggers.getLogger(this.getClass()).error("seekExact failed, returning default position = " + maxPosition + " in field = " + stats.field);
+                    Loggers.getLogger(this.getClass()).error("seekExact failed, returning default position = " +
+                            maxPosition + " in field = " + stats.field);
                     return maxPosition;
                 }
                 PostingsEnum dpEnum = termsEnum.postings(null, PostingsEnum.ALL);
@@ -115,12 +120,14 @@ public class PositionSimilarity extends Similarity {
                 dpEnum.nextPosition();
                 BytesRef payload = dpEnum.getPayload();
                 if (payload == null) {
-                    Loggers.getLogger(this.getClass()).error("getPayload failed, returning default position = " + maxPosition + " in field = " + stats.field);
+                    Loggers.getLogger(this.getClass()).error("getPayload failed, returning default position = " +
+                            maxPosition + " in field = " + stats.field);
                     return maxPosition;
                 }
                 return PayloadHelper.decodeInt(payload.bytes, payload.offset);
             } catch (Exception ex) {
-                Loggers.getLogger(this.getClass()).error("Unexpected exception, returning default position = " + maxPosition + " in field = " + stats.field, ex);
+                Loggers.getLogger(this.getClass()).error("Unexpected exception, returning default position = " +
+                        maxPosition + " in field = " + stats.field, ex);
                 return maxPosition;
             }
         }
@@ -163,7 +170,7 @@ public class PositionSimilarity extends Similarity {
          */
         @Override
         public float getValueForNormalization() {
-            // do not use any query normalization
+            // do not use query normalization
             return 1.0f;
         }
 
@@ -175,6 +182,7 @@ public class PositionSimilarity extends Similarity {
          */
         @Override
         public void normalize(float queryNorm, float boost) {
+            // use query boost
             this.totalBoost = queryNorm * boost;
         }
     }

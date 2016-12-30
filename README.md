@@ -10,7 +10,7 @@ This plugin allows to boost search relevance by a position of a word in a field.
 
 ## Build
 
-mvn clean package
+gradle clean assemble
 
 ## Install
 

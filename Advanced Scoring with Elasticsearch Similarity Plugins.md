@@ -59,7 +59,7 @@ curl -XPUT 'localhost:9200/test_index/test_type/_mapping' -d '
   "test_type": {
     "properties": {
       "field1": {
-        "type": "string"
+        "type": "text"
       }
     }
   }
@@ -377,13 +377,13 @@ public class PositionSimilarityPlugin extends Plugin {
 ## Build and Install Plugin
 
 ```bash
-git clone -b 2.4.3 https://github.com/sdauletau/elasticsearch-position-similarity.git elasticsearch-position-similarity
+git clone -b 5.1.1 https://github.com/sdauletau/elasticsearch-position-similarity.git elasticsearch-position-similarity
 
 cd elasticsearch-position-similarity
 
 mvn clean package
 
-/usr/local/opt/elasticsearch-2.4.3/bin/plugin install file:./target/releases/elasticsearch-position-similarity-2.4.3.zip
+/usr/local/opt/elasticsearch-5.1.1/bin/elasticsearch-plugin install file:///`pwd`/build/distributions/elasticsearch-position-similarity-5.1.1.zip
 ```
 
 **IMPORTANT**: Restart Elasticsearch.
@@ -440,10 +440,10 @@ curl -XPUT 'localhost:9200/test_index/test_type/_mapping' -d '
   "test_type": {
     "properties": {
       "field1": {
-        "type": "string"
+        "type": "text"
       },
       "field2": {
-        "type": "string",
+        "type": "text",
         "term_vector": "with_positions_offsets_payloads",
         "analyzer": "positionPayloadAnalyzer",
         "similarity": "positionSimilarity"

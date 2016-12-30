@@ -44,10 +44,10 @@ curl -XPUT 'localhost:9200/test_index/test_type/_mapping' -d '
   "test_type": {
     "properties": {
       "field1": {
-        "type": "string"
+        "type": "text"
       },
       "field2": {
-        "type": "string",
+        "type": "text",
         "term_vector": "with_positions_offsets_payloads",
         "analyzer": "positionPayloadAnalyzer",
         "similarity": "positionSimilarity"
