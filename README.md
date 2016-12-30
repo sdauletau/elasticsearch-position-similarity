@@ -68,7 +68,12 @@ curl -s -XPUT "http://localhost:9200/test_index" -d '
   "settings": {
     "index": {
       "number_of_shards": 1,
-      "number_of_replicas": 0
+      "number_of_replicas": 0,
+      "similarity": {
+        "default": {
+          "type": "classic"
+        }
+      }
     }
   }
 }
@@ -137,32 +142,36 @@ curl -s "localhost:9200/test_index/test_type/_search?pretty=true" -d '
 {
   "hits" : {
     "total" : 3,
-    "max_score" : 0.5036848,
-    "hits" : [ {
-      "_index" : "test_index",
-      "_type" : "test_type",
-      "_id" : "3",
-      "_score" : 0.5036848,
-      "_source" : {
-        "field1" : "bar bar foo foo"
+    "max_score" : 0.70710677,
+    "hits" : [
+      {
+        "_index" : "test_index",
+        "_type" : "test_type",
+        "_id" : "3",
+        "_score" : 0.70710677,
+        "_source" : {
+          "field1" : "bar bar foo foo"
+        }
+      },
+      {
+        "_index" : "test_index",
+        "_type" : "test_type",
+        "_id" : "1",
+        "_score" : 0.625,
+        "_source" : {
+          "field1" : "foo bar"
+        }
+      },
+      {
+        "_index" : "test_index",
+        "_type" : "test_type",
+        "_id" : "2",
+        "_score" : 0.61871845,
+        "_source" : {
+          "field1" : "foo foo bar bar bar"
+        }
       }
-    }, {
-      "_index" : "test_index",
-      "_type" : "test_type",
-      "_id" : "1",
-      "_score" : 0.4451987,
-      "_source" : {
-        "field1" : "foo bar"
-      }
-    }, {
-      "_index" : "test_index",
-      "_type" : "test_type",
-      "_id" : "2",
-      "_score" : 0.44072422,
-      "_source" : {
-        "field1" : "foo foo bar bar bar"
-      }
-    } ]
+    ]
   }
 }
 ```
@@ -174,37 +183,50 @@ curl -s "localhost:9200/test_index/test_type/_search?pretty=true" -d '
 
 ## Match Query Explanation
 
+```bash
+curl -s "localhost:9200/test_index/test_type/_search?pretty=true" -d '
+{
+  "explain": true,
+  "query": {
+    "match": {
+      "field1": "foo"
+    }
+  }
+}
+'
+```
+
 Note, that explanation is part of Lucene API and doc mentioned in explanation is a Lucene document id and it has nothing to do with Elacticsearch _id field.
 
 ```json
 {
-  "value": 0.5036848,
-  "description": "weight(field1:foo in 2) [PerFieldSimilarity], result of:",
-  "details": [
+  "value" : 0.70710677,
+  "description" : "weight(field1:foo in 2) [PerFieldSimilarity], result of:",
+  "details" : [
     {
-      "value": 0.5036848,
-      "description": "fieldWeight in 2, product of:",
-      "details": [
+      "value" : 0.70710677,
+      "description" : "fieldWeight in 2, product of:",
+      "details" : [
         {
-          "value": 1.4142135,
-          "description": "tf(freq=2.0), with freq of:",
-          "details": [
+          "value" : 1.4142135,
+          "description" : "tf(freq=2.0), with freq of:",
+          "details" : [
             {
-              "value": 2.0,
-              "description": "termFreq=2.0",
-              "details": []
+              "value" : 2.0,
+              "description" : "termFreq=2.0",
+              "details" : [ ]
             }
           ]
         },
         {
-          "value": 0.71231794,
-          "description": "idf(docFreq=3, maxDocs=3)",
-          "details": []
+          "value" : 1.0,
+          "description" : "idf(docFreq=3, docCount=3)",
+          "details" : [ ]
         },
         {
-          "value": 0.5,
-          "description": "fieldNorm(doc=2)",
-          "details": []
+          "value" : 0.5,
+          "description" : "fieldNorm(doc=2)",
+          "details" : [ ]
         }
       ]
     }
@@ -414,7 +436,12 @@ curl -s -XPUT "http://localhost:9200/test_index" -d '
   "settings": {
     "index": {
       "number_of_shards": 1,
-      "number_of_replicas": 0
+      "number_of_replicas": 0,
+      "similarity": {
+        "default": {
+          "type": "classic"
+        }
+      }
     },
     "similarity": {
       "positionSimilarity": {
@@ -499,7 +526,6 @@ doc id|foo freq|doc length|foo position
 ```bash
 curl -s "localhost:9200/test_index/test_type/_search?pretty=true" -d '
 {
-  "explain": false,
   "query": {
     "match": {
       "field2": "foo"
@@ -555,6 +581,19 @@ curl -s "localhost:9200/test_index/test_type/_search?pretty=true" -d '
 
 ## Match Query Explanation
 
+```bash
+curl -s "localhost:9200/test_index/test_type/_search?pretty=true" -d '
+{
+  "explain": true,
+  "query": {
+    "match": {
+      "field2": "foo"
+    }
+  }
+}
+'
+```
+
 Note, that explanation is part of Lucene API and doc mentioned in explanation is a Lucene document id and it has nothing to do with Elacticsearch _id field.
 
 ```json
@@ -576,4 +615,3 @@ Note, that explanation is part of Lucene API and doc mentioned in explanation is
   ]
 }
 ```
-

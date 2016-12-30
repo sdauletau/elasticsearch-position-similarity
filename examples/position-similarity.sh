@@ -7,7 +7,12 @@ curl -s -XPUT "http://localhost:9200/test_index" -d '
   "settings": {
     "index": {
       "number_of_shards": 1,
-      "number_of_replicas": 0
+      "number_of_replicas": 0,
+      "similarity": {
+        "default": {
+          "type": "classic"
+        }
+      }
     },
     "similarity": {
       "positionSimilarity": {

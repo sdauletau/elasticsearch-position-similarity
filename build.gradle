@@ -12,6 +12,14 @@
  * limitations under the License.
  */
 
+// TODO: remove this when upgrading to a version that supports ProgressLogger
+// gradle 2.14 made internal apis unavailable to plugins, and gradle considered
+// ProgressLogger to be an internal api. Until this is made available again,
+// we can't upgrade without losing our nice progress logging
+if (GradleVersion.current() != GradleVersion.version('2.13')) {
+  throw new GradleException('Gradle 2.13 is required to build elasticsearch')
+}
+
 buildscript {
     repositories {
         mavenCentral()
