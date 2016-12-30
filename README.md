@@ -1,12 +1,12 @@
 <!--
-  Title: Elasticsearch position similarity (aka boost by position) plugin
+  Title: Elasticsearch term position similarity (aka boost by position) plugin
   Description: Elasticsearch plugin to boost search relevance by a position of a term.
   Author: Sergei Dauletau
   -->
   
 # Elasticsearch term position similarity plugin
 
-This plugin allows to boost search relevance by a position of a term in a field.
+This plugin allows to calculate score using matching term position so that terms closer to the beginning of a field have higher scores.
 
 ## Build
 
