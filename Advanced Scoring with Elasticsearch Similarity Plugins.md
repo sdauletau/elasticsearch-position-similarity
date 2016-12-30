@@ -284,12 +284,13 @@ private static class PositionStats extends SimWeight {
 
     @Override
     public float getValueForNormalization() {
-        // do not use any query normalization
+        // do not use query normalization
         return 1.0f;
     }
 
     @Override
     public void normalize(float queryNorm, float boost) {
+        // use query boost
         this.totalBoost = queryNorm * boost;
     }
 }
