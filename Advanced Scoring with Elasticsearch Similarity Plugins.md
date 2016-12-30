@@ -358,18 +358,8 @@ public class PositionSimilarityProvider extends AbstractSimilarityProvider {
 
 ```java
 public class PositionSimilarityPlugin extends Plugin {
-    @Override
-    public String name() {
-        return "position-similarity";
-    }
-
-    @Override
-    public String description() {
-        return "position-similarity plugin";
-    }
-
-    public void onModule(SimilarityModule module) {
-        module.addSimilarity("position-similarity", PositionSimilarityProvider.class);
+    public void onIndexModule(IndexModule indexModule) {
+        indexModule.addSimilarity("position-similarity", PositionSimilarityProvider::new);
     }
 }
 ```
@@ -381,7 +371,7 @@ git clone -b 5.1.1 https://github.com/sdauletau/elasticsearch-position-similarit
 
 cd elasticsearch-position-similarity
 
-mvn clean package
+gradle clean assemble
 
 /usr/local/opt/elasticsearch-5.1.1/bin/elasticsearch-plugin install file:///`pwd`/build/distributions/elasticsearch-position-similarity-5.1.1.zip
 ```
