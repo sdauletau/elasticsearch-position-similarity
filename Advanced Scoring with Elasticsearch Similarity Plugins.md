@@ -1,3 +1,9 @@
+<!--
+  title: Advanced Scoring with Elasticsearch Similarity Plugins
+  description: Advanced Scoring with Elasticsearch Custom Similarity Plugins
+  author: sdauletau
+  -->
+  
 # Advanced Scoring with Elasticsearch Similarity Plugins
 
 ## What are Plugins
