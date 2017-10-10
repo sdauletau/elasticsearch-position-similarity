@@ -19,6 +19,14 @@ import org.elasticsearch.index.similarity.PositionSimilarityProvider;
 import org.elasticsearch.plugins.Plugin;
 
 public class PositionSimilarityPlugin extends Plugin {
+    public String name() {
+        return "elasticsearch-position-similarity";
+    }
+
+    public String description() {
+        return "Elasticsearch scoring plugin based on matching a term or a phrase relative to a position of the term in a searched field.";
+    }
+
     public void onIndexModule(IndexModule indexModule) {
         indexModule.addSimilarity("position-similarity", PositionSimilarityProvider::new);
     }

@@ -14,17 +14,13 @@
 
 package org.elasticsearch.index.similarity;
 
-import org.elasticsearch.common.inject.Inject;
-import org.elasticsearch.common.inject.assistedinject.Assisted;
 import org.elasticsearch.common.settings.Settings;
 
 public class PositionSimilarityProvider extends AbstractSimilarityProvider {
-    private final PositionSimilarity similarity;
+    private final PositionSimilarity similarity = new PositionSimilarity();
 
-    @Inject
-    public PositionSimilarityProvider(@Assisted String name, @Assisted Settings settings) {
+    public PositionSimilarityProvider(String name, Settings settings, Settings indexSettings) {
         super(name);
-        this.similarity = new PositionSimilarity(settings);
     }
 
     public PositionSimilarity get() {

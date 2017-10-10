@@ -266,8 +266,8 @@ public class PositionSimilarity extends Similarity {
 
     @Override
     public final SimScorer simScorer(SimWeight weight, LeafReaderContext context) throws IOException {
-        PositionStats positionStats = (PositionStats) weight;
-        return new PositionSimScorer(positionStats, context);
+        PositionStats positionScore = (PositionStats) weight;
+        return new PositionSimScorer(positionScore, context);
     }
 }
 ```
@@ -311,12 +311,12 @@ The actual implementation is available at https://github.com/sdauletau/elasticse
 
 ```java
 private final class PositionSimScorer extends SimScorer {
-    private final PositionStats stats;
+    private final PositionStats weight;
     private final LeafReaderContext context;
     private final List<Explanation> explanations = new ArrayList<>();
 
-    PositionSimScorer(PositionStats stats, LeafReaderContext context) throws IOException {
-        this.stats = stats;
+    PositionSimScorer(PositionStats weight, LeafReaderContext context) throws IOException {
+        this.weight = weight;
         this.context = context;
     }
 

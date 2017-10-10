@@ -15,59 +15,55 @@
 package org.elasticsearch.index.similarity;
 
 import org.apache.lucene.analysis.payloads.PayloadHelper;
-import org.apache.lucene.index.FieldInvertState;
-import org.apache.lucene.index.LeafReaderContext;
-import org.apache.lucene.index.PostingsEnum;
-import org.apache.lucene.index.Terms;
-import org.apache.lucene.index.TermsEnum;
+import org.apache.lucene.index.*;
 import org.apache.lucene.search.CollectionStatistics;
 import org.apache.lucene.search.Explanation;
 import org.apache.lucene.search.TermStatistics;
 import org.apache.lucene.search.similarities.Similarity;
 import org.apache.lucene.util.BytesRef;
 import org.elasticsearch.common.logging.Loggers;
-import org.elasticsearch.common.settings.Settings;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class PositionSimilarity extends Similarity {
-    protected final Settings settings;
-
-    public PositionSimilarity(Settings settings) {
-        this.settings = settings;
+    public PositionSimilarity() {
     }
 
-    @Override
-    public String toString() {
-        return "PositionSimilarity";
-    }
-
-    @Override
     public long computeNorm(FieldInvertState state) {
         // ignore field boost and length during indexing
         return 1;
     }
 
-    @Override
-        public SimWeight computeWeight(CollectionStatistics collectionStats, TermStatistics... termStats) {
-        return new PositionStats(collectionStats.field(), termStats);
+    public SimWeight computeWeight(float boost, CollectionStatistics collectionStats, TermStatistics... termStats) {
+        return new PositionWeight(boost, collectionStats, termStats);
     }
 
-    @Override
     public final SimScorer simScorer(SimWeight weight, LeafReaderContext context) throws IOException {
-        PositionStats positionStats = (PositionStats) weight;
-        return new PositionSimScorer(positionStats, context);
+        PositionWeight positionWeight = (PositionWeight) weight;
+        return new PositionScorer(positionWeight, context);
     }
 
-    private final class PositionSimScorer extends SimScorer {
-        private final PositionStats stats;
+    private static class PositionWeight extends SimWeight {
+        private float boost;
+        private final String field;
+        private final TermStatistics[] termStats;
+
+        PositionWeight(float boost, CollectionStatistics collectionStats, TermStatistics... termStats) {
+            this.boost = boost;
+            this.field = collectionStats.field();
+            this.termStats = termStats;
+        }
+    }
+
+    private final class PositionScorer extends SimScorer {
+        private final PositionWeight weight;
         private final LeafReaderContext context;
         private final List<Explanation> explanations = new ArrayList<>();
 
-        PositionSimScorer(PositionStats stats, LeafReaderContext context) throws IOException {
-            this.stats = stats;
+        PositionScorer(PositionWeight weight, LeafReaderContext context) throws IOException {
+            this.weight = weight;
             this.context = context;
         }
 
@@ -78,12 +74,11 @@ public class PositionSimilarity extends Similarity {
          * @return A term score for a field in a document. Depends on a position of the term.
          *         A term with lower position will score higher.
          */
-        @Override
         public float score(int doc, float freq) {
             float totalScore = 0.0f;
             int i = 0;
-            while (i < stats.termStats.length) {
-                totalScore += scoreTerm(doc, stats.termStats[i].term());
+            while (i < weight.termStats.length) {
+                totalScore += scoreTerm(doc, weight.termStats[i].term());
                 i++;
             }
             return totalScore;
@@ -92,13 +87,13 @@ public class PositionSimilarity extends Similarity {
         private float scoreTerm(int doc, BytesRef term) {
             float halfScorePosition = 5.0f; // position where score should decrease by 50%
             int termPosition = position(doc, term);
-            float termScore = stats.totalBoost * halfScorePosition / (halfScorePosition + termPosition);
+            float termScore = weight.boost * halfScorePosition / (halfScorePosition + termPosition);
 
-            String func = stats.totalBoost + "*" + halfScorePosition + "/(" + halfScorePosition + "+" + termPosition + ")";
+            String func = weight.boost + "*" + halfScorePosition + "/(" + halfScorePosition + "+" + termPosition + ")";
             explanations.add(
                 Explanation.match(
                     termScore,
-                    "score(boost=" + stats.totalBoost +", pos=" + termPosition + ", func=" + func + ")"
+                    "score(boost=" + weight.boost +", pos=" + termPosition + ", func=" + func + ")"
                 )
             );
 
@@ -108,11 +103,11 @@ public class PositionSimilarity extends Similarity {
         private int position(int doc, BytesRef term) {
             int maxPosition = 20;
             try {
-                Terms terms = context.reader().getTermVector(doc, stats.field);
+                Terms terms = context.reader().getTermVector(doc, weight.field);
                 TermsEnum termsEnum = terms.iterator();
                 if (!termsEnum.seekExact(term)) {
                     Loggers.getLogger(this.getClass()).error("seekExact failed, returning default position = " +
-                            maxPosition + " in field = " + stats.field);
+                            maxPosition + " for field = " + weight.field);
                     return maxPosition;
                 }
                 PostingsEnum dpEnum = termsEnum.postings(null, PostingsEnum.ALL);
@@ -121,69 +116,31 @@ public class PositionSimilarity extends Similarity {
                 BytesRef payload = dpEnum.getPayload();
                 if (payload == null) {
                     Loggers.getLogger(this.getClass()).error("getPayload failed, returning default position = " +
-                            maxPosition + " in field = " + stats.field);
+                            maxPosition + " for field = " + weight.field);
                     return maxPosition;
                 }
                 return PayloadHelper.decodeInt(payload.bytes, payload.offset);
             } catch (Exception ex) {
                 Loggers.getLogger(this.getClass()).error("Unexpected exception, returning default position = " +
-                        maxPosition + " in field = " + stats.field, ex);
+                        maxPosition + " for field = " + weight.field, ex);
                 return maxPosition;
             }
         }
 
-        @Override
         public float computeSlopFactor(int distance) {
             return 1.0f / (distance + 1);
         }
 
-        @Override
         public float computePayloadFactor(int doc, int start, int end, BytesRef payload) {
             return 1.0f;
         }
 
-        @Override
         public Explanation explain(int doc, Explanation freq) {
             return Explanation.match(
                     score(doc, freq.getValue()),
                     "position score(doc=" + doc + ", freq=" + freq.getValue() + "), sum of:",
                     explanations
             );
-        }
-    }
-
-    private static class PositionStats extends SimWeight {
-        private final String field;
-        private final TermStatistics[] termStats;
-        private float totalBoost;
-
-        public PositionStats(String field, TermStatistics... termStats) {
-            this.field = field;
-            this.termStats = termStats;
-        }
-
-        /** The value for normalization of contained query clauses (e.g. sum of squared weights).
-         * <p>
-         * NOTE: a Similarity implementation might not use any query normalization at all,
-         * it's not required. However, if it wants to participate in query normalization,
-         * it can return a value here.
-         */
-        @Override
-        public float getValueForNormalization() {
-            // do not use query normalization
-            return 1.0f;
-        }
-
-        /** Assigns the query normalization factor and boost from parent queries to this.
-         * <p>
-         * NOTE: a Similarity implementation might not use this normalized value at all,
-         * it's not required. However, it's usually a good idea to at least incorporate
-         * the boost into its score.
-         */
-        @Override
-        public void normalize(float queryNorm, float boost) {
-            // use query boost
-            this.totalBoost = queryNorm * boost;
         }
     }
 }

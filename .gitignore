@@ -1,6 +1,8 @@
 .idea
-.gradle
 *.iml
-target
+*.ipr
+*.iws
 build
-.DS_Store
+.gradle
+target
+.DS_Score
