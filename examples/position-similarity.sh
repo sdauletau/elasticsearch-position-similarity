@@ -1,8 +1,8 @@
 #!/bin/sh
 
-curl -s -XDELETE "http://localhost:9200/test_index"
+curl --header "Content-Type:application/json" -s -XDELETE "http://localhost:9200/test_index"
 
-curl -s -XPUT "http://localhost:9200/test_index" -d '
+curl --header "Content-Type:application/json" -s -XPUT "http://localhost:9200/test_index" -d '
 {
   "settings": {
     "index": {
@@ -44,7 +44,7 @@ curl -s -XPUT "http://localhost:9200/test_index" -d '
 }
 '
 
-curl -XPUT 'localhost:9200/test_index/test_type/_mapping' -d '
+curl --header "Content-Type:application/json" -XPUT 'localhost:9200/test_index/test_type/_mapping' -d '
 {
   "test_type": {
     "properties": {
@@ -62,25 +62,25 @@ curl -XPUT 'localhost:9200/test_index/test_type/_mapping' -d '
 }
 '
 
-curl -s -XPUT "localhost:9200/test_index/test_type/1" -d '
+curl --header "Content-Type:application/json" -s -XPUT "localhost:9200/test_index/test_type/1" -d '
 {"field1" : "bar foo", "field2" : "bar|0 foo|1"}
 '
 
-curl -s -XPUT "localhost:9200/test_index/test_type/2" -d '
+curl --header "Content-Type:application/json" -s -XPUT "localhost:9200/test_index/test_type/2" -d '
 {"field1" : "foo foo bar bar bar", "field2" : "foo|0 foo|1 bar|3 bar|4 bar|5"}
 '
 
-curl -s -XPUT "localhost:9200/test_index/test_type/3" -d '
+curl --header "Content-Type:application/json" -s -XPUT "localhost:9200/test_index/test_type/3" -d '
 {"field1" : "bar bar foo foo", "field2" : "bar|0 bar|1 foo|2 foo|3"}
 '
 
-curl -s -XPOST "http://localhost:9200/test_index/_refresh"
+curl --header "Content-Type:application/json" -s -XPOST "http://localhost:9200/test_index/_refresh"
 
 echo
 echo
 echo 'expecting doc 2 to have highest score'
 
-curl -s "localhost:9200/test_index/test_type/_search?pretty=true" -d '
+curl --header "Content-Type:application/json" -s "localhost:9200/test_index/test_type/_search?pretty=true" -d '
 {
   "explain": false,
   "query": {
@@ -95,7 +95,7 @@ echo
 echo
 echo 'explain highest score'
 
-curl -s "localhost:9200/test_index/test_type/_search?pretty=true" -d '
+curl --header "Content-Type:application/json" -s "localhost:9200/test_index/test_type/_search?pretty=true" -d '
 {
   "explain": true,
   "from": 0,
@@ -112,7 +112,7 @@ echo
 echo
 echo 'expecting doc 2 to have highest score'
 
-curl -s "localhost:9200/test_index/test_type/_search?pretty=true" -d '
+curl --header "Content-Type:application/json" -s "localhost:9200/test_index/test_type/_search?pretty=true" -d '
 {
   "explain": false,
   "query": {
