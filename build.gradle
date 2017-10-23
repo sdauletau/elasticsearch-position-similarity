@@ -22,7 +22,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath "org.elasticsearch.gradle:build-tools:6.0.0-beta2"
+        classpath "org.elasticsearch.gradle:build-tools:6.0.0-rc1"
     }
 }
 
@@ -35,7 +35,7 @@ ext.projectSubstitutions = [:]
 licenseFile = rootProject.file('LICENSE.txt')
 noticeFile = rootProject.file('NOTICE.txt')
 
-version = '6.0.0-beta2'
+version = '6.0.0-rc1'
 
 esplugin {
     description 'Elasticsearch scoring plugin based on matching a term or a phrase relative to a position of the term in a searched field.'
