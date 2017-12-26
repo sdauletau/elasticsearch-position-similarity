@@ -10,7 +10,7 @@ Elasticsearch custom similarity plugin to calculate score based on term position
 
 ## Build
 
-gradle clean assemble
+./gradlew clean assemble
 
 ## Install
 
@@ -28,7 +28,7 @@ Run ./examples/position-similarity.sh
 
 > Plugins are a way to enhance the core Elasticsearch functionality in a custom manner.
 
-https://www.elastic.co/guide/en/elasticsearch/plugins/2.4/index.html
+https://www.elastic.co/guide/en/elasticsearch/plugins/current/intro.html
 
 
 ## What is Similarity
@@ -37,10 +37,10 @@ https://www.elastic.co/guide/en/elasticsearch/plugins/2.4/index.html
 >
 >Configuring a custom similarity is considered an expert feature and the builtin similarities are most likely sufficient.
 
-https://www.elastic.co/guide/en/elasticsearch/reference/2.4/index-modules-similarity.html#default-similarity
+https://www.elastic.co/guide/en/elasticsearch/reference/current/index-modules-similarity.html
 
 
-## Scoring Formula
+## Classic Similarity Scoring Formula
 
 ```
 score(q,d) =
@@ -56,14 +56,16 @@ score(q,d) =
 
 https://www.elastic.co/guide/en/elasticsearch/guide/2.x/practical-scoring-function.html
 
+Note, that we can disable normalization by adding { "norms": false } to a field mappings.
+
 Let's index some documents, run a match query and look at explanation.
 
 ## Create Elasticsearch Index
 
 ```bash
-curl -s -XDELETE "http://localhost:9200/test_index"
+curl --header "Content-Type:application/json" -s -XDELETE "http://localhost:9200/test_index"
 
-curl -s -XPUT "http://localhost:9200/test_index" -d '
+curl --header "Content-Type:application/json" -s -XPUT "http://localhost:9200/test_index" -d '
 {
   "settings": {
     "index": {
@@ -83,12 +85,13 @@ curl -s -XPUT "http://localhost:9200/test_index" -d '
 ## Create Type Mapping
 
 ```bash
-curl -XPUT 'localhost:9200/test_index/test_type/_mapping' -d '
+curl --header "Content-Type:application/json" -XPUT 'localhost:9200/test_index/test_type/_mapping' -d '
 {
   "test_type": {
     "properties": {
       "field1": {
-        "type": "text"
+        "type": "text",
+        "norms": false
       }
     }
   }
@@ -99,32 +102,32 @@ curl -XPUT 'localhost:9200/test_index/test_type/_mapping' -d '
 ## Index Documents
 
 ```bash
-curl -s -XPUT "localhost:9200/test_index/test_type/1" -d '
-{"field1" : "foo bar"}
+curl --header "Content-Type:application/json" -s -XPUT "localhost:9200/test_index/test_type/1" -d '
+{"field1" : "bar foo"}
 '
 
-curl -s -XPUT "localhost:9200/test_index/test_type/2" -d '
-{"field1" : "foo foo bar bar bar"}
+curl --header "Content-Type:application/json" -s -XPUT "localhost:9200/test_index/test_type/2" -d '
+{"field1" : "foo bar bar"}
 '
 
-curl -s -XPUT "localhost:9200/test_index/test_type/3" -d '
+curl --header "Content-Type:application/json" -s -XPUT "localhost:9200/test_index/test_type/3" -d '
 {"field1" : "bar bar foo foo"}
 '
 
-curl -s -XPOST "http://localhost:9200/test_index/_refresh"
+curl --header "Content-Type:application/json" -s -XPOST "http://localhost:9200/test_index/_refresh"
 ```
 
 doc id|foo freq|doc length
 ------|--------|----------
 1|1|2
-2|2|5
+2|1|3
 3|2|4
 
 
 ## Match Query
 
 ```bash
-curl -s "localhost:9200/test_index/test_type/_search?pretty=true" -d '
+curl --header "Content-Type:application/json" -s "localhost:9200/test_index/test_type/_search?pretty=true" -d '
 {
   "query": {
     "match": {
@@ -141,50 +144,49 @@ curl -s "localhost:9200/test_index/test_type/_search?pretty=true" -d '
 ```json
 {
   "hits" : {
-    "total" : 3,
-    "max_score" : 0.70710677,
-    "hits" : [
-      {
-        "_index" : "test_index",
-        "_type" : "test_type",
-        "_id" : "3",
-        "_score" : 0.70710677,
-        "_source" : {
-          "field1" : "bar bar foo foo"
-        }
-      },
-      {
-        "_index" : "test_index",
-        "_type" : "test_type",
-        "_id" : "1",
-        "_score" : 0.625,
-        "_source" : {
-          "field1" : "foo bar"
-        }
-      },
-      {
-        "_index" : "test_index",
-        "_type" : "test_type",
-        "_id" : "2",
-        "_score" : 0.61871845,
-        "_source" : {
-          "field1" : "foo foo bar bar bar"
-        }
+  "total" : 3,
+  "max_score" : 1.4142135,
+  "hits" : [
+    {
+      "_index" : "test_index",
+      "_type" : "test_type",
+      "_id" : "3",
+      "_score" : 1.4142135,
+      "_source" : {
+        "field1" : "bar bar foo foo"
       }
-    ]
-  }
+    },
+    {
+      "_index" : "test_index",
+      "_type" : "test_type",
+      "_id" : "1",
+      "_score" : 1.0,
+      "_source" : {
+        "field1" : "bar foo"
+      }
+    },
+    {
+      "_index" : "test_index",
+      "_type" : "test_type",
+      "_id" : "2",
+      "_score" : 1.0,
+      "_source" : {
+        "field1" : "foo bar bar"
+      }
+    }
+  ]
 }
 ```
 
-- Document 3 has higher frequency than Document 1 and lower length than Document 2.
+- Document 3 has the highest score because it has higher foo frequency than Document 1 and Document 2 and because we ignore length normalization.
 
-- Document 1 has lower frequency than Document 2 but it also has lower length than Document 2.
+- Document 1 and 2 have the same score because they have the same foo frequency and because we ignore length normalization.
 
 
 ## Match Query Explanation
 
 ```bash
-curl -s "localhost:9200/test_index/test_type/_search?pretty=true" -d '
+curl --header "Content-Type:application/json" -s "localhost:9200/test_index/test_type/_search?pretty=true" -d '
 {
   "explain": true,
   "query": {
@@ -200,11 +202,11 @@ Note, that explanation is part of Lucene API and doc mentioned in explanation is
 
 ```json
 {
-  "value" : 0.70710677,
+  "value" : 1.4142135,
   "description" : "weight(field1:foo in 2) [PerFieldSimilarity], result of:",
   "details" : [
     {
-      "value" : 0.70710677,
+      "value" : 1.4142135,
       "description" : "fieldWeight in 2, product of:",
       "details" : [
         {
@@ -220,11 +222,22 @@ Note, that explanation is part of Lucene API and doc mentioned in explanation is
         },
         {
           "value" : 1.0,
-          "description" : "idf(docFreq=3, docCount=3)",
-          "details" : [ ]
+          "description" : "idf, computed as log((docCount+1)/(docFreq+1)) + 1 from:",
+          "details" : [
+            {
+              "value" : 4.0,
+              "description" : "docFreq",
+              "details" : [ ]
+            },
+            {
+              "value" : 4.0,
+              "description" : "docCount",
+              "details" : [ ]
+            }
+          ]
         },
         {
-          "value" : 0.5,
+          "value" : 1.0,
           "description" : "fieldNorm(doc=2)",
           "details" : [ ]
         }
@@ -234,6 +247,11 @@ Note, that explanation is part of Lucene API and doc mentioned in explanation is
 }
 ```
 
+## We Need a Better Score
+
+The default scoring model works good but the best scoring model will always be application specific.
+Let's say that we want to score documents based on a position of a matching token.
+For our example, we want to score Document 2 higher than Document 1 and 3.
 
 ## Similarity Plugins
 
@@ -312,66 +330,52 @@ public class PositionSimilarity extends Similarity {
 }
 ```
 
-## PositionStats extends SimWeight
+## PositionWeight extends SimWeight
 
-The first class that we need to implement will extend SimWeight. This class has a very simple implementation. We will use it to pass any necessary parameters into PositionSimScorer.
+The first class that we need to implement will extend SimWeight. This class has a very simple implementation. We will use it to pass any necessary parameters into PositionScorer.
 
 
 ```java
-private static class PositionStats extends SimWeight {
+private static class PositionWeight extends SimWeight {
+    private float boost;
     private final String field;
     private final TermStatistics[] termStats;
-    private float totalBoost;
 
-    public PositionStats(String field, TermStatistics... termStats) {
-        this.field = field;
+    PositionWeight(float boost, CollectionStatistics collectionStats, TermStatistics... termStats) {
+        this.boost = boost;
+        this.field = collectionStats.field();
         this.termStats = termStats;
-    }
-
-    @Override
-    public float getValueForNormalization() {
-        // do not use query normalization
-        return 1.0f;
-    }
-
-    @Override
-    public void normalize(float queryNorm, float boost) {
-        // use query boost
-        this.totalBoost = queryNorm * boost;
     }
 }
 ```
 
 
-## PositionSimScorer extends SimScorer
+## PositionScorer extends SimScorer
 
 The second class will extend SimScorer and will allow us to compute custom score by overriding `score` method.
 The actual implementation is available at https://github.com/sdauletau/elasticsearch-position-similarity/blob/master/src/main/java/org/elasticsearch/index/similarity/PositionSimilarity.java.
 
 
 ```java
-private final class PositionSimScorer extends SimScorer {
-    private final PositionStats weight;
+private final class PositionScorer extends SimScorer {
+    private final PositionWeight weight;
     private final LeafReaderContext context;
     private final List<Explanation> explanations = new ArrayList<>();
 
-    PositionSimScorer(PositionStats weight, LeafReaderContext context) throws IOException {
+    PositionScorer(PositionWeight weight, LeafReaderContext context) throws IOException {
         this.weight = weight;
         this.context = context;
     }
 
-    @Override
     public float score(int doc, float freq) {
         // calculate score
         // return score
     }
 
-    @Override
     public float computeSlopFactor(int distance) {
         return 1.0f / (distance + 1);
     }
 
-    @Override
     public float computePayloadFactor(int doc, int start, int end, BytesRef payload) {
         return 1.0f;
     }
@@ -387,12 +391,10 @@ At this point we need two more classes to implement AbstractSimilarityProvider a
 
 ```java
 public class PositionSimilarityProvider extends AbstractSimilarityProvider {
-    private final PositionSimilarity similarity;
+    private final PositionSimilarity similarity = new PositionSimilarity();
 
-    @Inject
-    public PositionSimilarityProvider(@Assisted String name, @Assisted Settings settings) {
+    public PositionSimilarityProvider(String name, Settings settings, Settings indexSettings, ScriptService scriptService) {
         super(name);
-        this.similarity = new PositionSimilarity();
     }
 
     public PositionSimilarity get() {
@@ -405,6 +407,10 @@ public class PositionSimilarityProvider extends AbstractSimilarityProvider {
 
 ```java
 public class PositionSimilarityPlugin extends Plugin {
+    public String name() {
+        return "elasticsearch-position-similarity";
+    }
+
     public void onIndexModule(IndexModule indexModule) {
         indexModule.addSimilarity("position-similarity", PositionSimilarityProvider::new);
     }
@@ -414,13 +420,13 @@ public class PositionSimilarityPlugin extends Plugin {
 ## Build and Install Plugin
 
 ```bash
-git clone -b 5.1.1 https://github.com/sdauletau/elasticsearch-position-similarity.git elasticsearch-position-similarity
+git clone -b 6.1.0 https://github.com/sdauletau/elasticsearch-position-similarity.git elasticsearch-position-similarity
 
 cd elasticsearch-position-similarity
 
-gradle clean assemble
+./gradlew clean assemble
 
-/usr/local/opt/elasticsearch-5.1.1/bin/elasticsearch-plugin install file:///`pwd`/build/distributions/elasticsearch-position-similarity-5.1.1.zip
+/usr/local/opt/elasticsearch-6.1.0/bin/elasticsearch-plugin install file:///`pwd`/build/distributions/elasticsearch-position-similarity-6.1.0.zip
 ```
 
 **IMPORTANT**: Restart Elasticsearch.
@@ -429,9 +435,9 @@ gradle clean assemble
 ## Create Elasticsearch Index
 
 ```bash
-curl -s -XDELETE "http://localhost:9200/test_index"
+curl --header "Content-Type:application/json" -s -XDELETE "http://localhost:9200/test_index"
 
-curl -s -XPUT "http://localhost:9200/test_index" -d '
+curl --header "Content-Type:application/json" -s -XPUT "http://localhost:9200/test_index" -d '
 {
   "settings": {
     "index": {
@@ -477,15 +483,17 @@ curl -s -XPUT "http://localhost:9200/test_index" -d '
 ## Create Type Mapping
 
 ```bash
-curl -XPUT 'localhost:9200/test_index/test_type/_mapping' -d '
+curl --header "Content-Type:application/json" -XPUT 'localhost:9200/test_index/test_type/_mapping' -d '
 {
   "test_type": {
     "properties": {
       "field1": {
-        "type": "text"
+        "type": "text",
+        "norms": false
       },
       "field2": {
         "type": "text",
+        "norms": false,
         "term_vector": "with_positions_offsets_payloads",
         "analyzer": "positionPayloadAnalyzer",
         "similarity": "positionSimilarity"
@@ -499,32 +507,32 @@ curl -XPUT 'localhost:9200/test_index/test_type/_mapping' -d '
 ## Index Documents
 
 ```bash
-curl -s -XPUT "localhost:9200/test_index/test_type/1" -d '
+curl --header "Content-Type:application/json" -s -XPUT "localhost:9200/test_index/test_type/1" -d '
 {"field1" : "bar foo", "field2" : "bar|0 foo|1"}
 '
 
-curl -s -XPUT "localhost:9200/test_index/test_type/2" -d '
-{"field1" : "foo foo bar bar bar", "field2" : "foo|0 foo|1 bar|3 bar|4 bar|5"}
+curl --header "Content-Type:application/json" -s -XPUT "localhost:9200/test_index/test_type/2" -d '
+{"field1" : "foo bar bar", "field2" : "foo|0 bar|1 bar|3"}
 '
 
-curl -s -XPUT "localhost:9200/test_index/test_type/3" -d '
+curl --header "Content-Type:application/json" -s -XPUT "localhost:9200/test_index/test_type/3" -d '
 {"field1" : "bar bar foo foo", "field2" : "bar|0 bar|1 foo|2 foo|3"}
 '
 
-curl -s -XPOST "http://localhost:9200/test_index/_refresh"
+curl --header "Content-Type:application/json" -s -XPOST "http://localhost:9200/test_index/_refresh"
 ```
 
 doc id|foo freq|doc length|foo position
 ------|--------|----------|------------
 1|1|2|1
-2|2|5|0
+2|1|3|0
 3|2|4|2
 
 
 ## Match Query
 
 ```bash
-curl -s "localhost:9200/test_index/test_type/_search?pretty=true" -d '
+curl --header "Content-Type:application/json" -s "localhost:9200/test_index/test_type/_search?pretty=true" -d '
 {
   "query": {
     "match": {
@@ -540,16 +548,21 @@ curl -s "localhost:9200/test_index/test_type/_search?pretty=true" -d '
 
 ```json
 {
-  "hits" : [ {
+  "hits" : {
+  "total" : 3,
+  "max_score" : 1.0,
+  "hits" : [
+    {
       "_index" : "test_index",
       "_type" : "test_type",
       "_id" : "2",
       "_score" : 1.0,
       "_source" : {
-        "field1" : "foo foo bar bar bar",
-        "field2" : "foo|0 foo|1 bar|3 bar|4 bar|5"
+        "field1" : "foo bar bar",
+        "field2" : "foo|0 bar|1 bar|3"
       }
-    }, {
+    },
+    {
       "_index" : "test_index",
       "_type" : "test_type",
       "_id" : "1",
@@ -558,7 +571,8 @@ curl -s "localhost:9200/test_index/test_type/_search?pretty=true" -d '
         "field1" : "bar foo",
         "field2" : "bar|0 foo|1"
       }
-    }, {
+    },
+    {
       "_index" : "test_index",
       "_type" : "test_type",
       "_id" : "3",
@@ -567,22 +581,18 @@ curl -s "localhost:9200/test_index/test_type/_search?pretty=true" -d '
         "field1" : "bar bar foo foo",
         "field2" : "bar|0 bar|1 foo|2 foo|3"
       }
-    } ]
-  }
+    }
+  ]
 }
 ```
 
-- ~~Document 3 has higher frequency than Document 1 and lower length than Document 2.~~
-
-- ~~Document 1 has lower frequency than Document 2 but it also has lower length than Document 2.~~
-
-- Document 2 has lowest position.
+- Document 2 has the highest score because foo has the lowest position.
 
 
 ## Match Query Explanation
 
 ```bash
-curl -s "localhost:9200/test_index/test_type/_search?pretty=true" -d '
+curl --header "Content-Type:application/json" -s "localhost:9200/test_index/test_type/_search?pretty=true" -d '
 {
   "explain": true,
   "query": {
@@ -598,17 +608,17 @@ Note, that explanation is part of Lucene API and doc mentioned in explanation is
 
 ```json
 {
-  "value": 1.0,
-  "description": "weight(field2:foo in 1) [PerFieldSimilarity], result of:",
-  "details": [
+  "value" : 1.0,
+  "description" : "weight(field2:foo in 1) [PerFieldSimilarity], result of:",
+  "details" : [
     {
-      "value": 1.0,
-      "description": "position score(doc=1, freq=2.0), sum of:",
-      "details": [
+      "value" : 1.0,
+      "description" : "position score(doc=1, freq=1.0), sum of:",
+      "details" : [
         {
-          "value": 1.0,
-          "description": "score(boost=1.0, pos=0, func=1.0*5.0/(5.0+0))",
-          "details": []
+          "value" : 1.0,
+          "description" : "score(boost=1.0, pos=0, func=1.0*5.0/(5.0+0))",
+          "details" : [ ]
         }
       ]
     }

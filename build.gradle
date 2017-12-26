@@ -15,14 +15,10 @@
 buildscript {
     repositories {
         mavenCentral()
-        maven {
-            name 'sonatype-snapshots'
-            url "https://oss.sonatype.org/content/repositories/snapshots/"
-        }
         jcenter()
     }
     dependencies {
-        classpath "org.elasticsearch.gradle:build-tools:6.0.0-rc1"
+        classpath "org.elasticsearch.gradle:build-tools:${rootProject.file('VERSION.txt').text.trim()}"
     }
 }
 
@@ -35,7 +31,7 @@ ext.projectSubstitutions = [:]
 licenseFile = rootProject.file('LICENSE.txt')
 noticeFile = rootProject.file('NOTICE.txt')
 
-version = '6.0.0-rc1'
+version = rootProject.file('VERSION.txt').text.trim()
 
 esplugin {
     description 'Elasticsearch scoring plugin based on matching a term or a phrase relative to a position of the term in a searched field.'

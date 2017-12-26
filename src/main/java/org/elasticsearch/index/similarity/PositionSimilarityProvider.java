@@ -15,11 +15,12 @@
 package org.elasticsearch.index.similarity;
 
 import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.script.ScriptService;
 
 public class PositionSimilarityProvider extends AbstractSimilarityProvider {
     private final PositionSimilarity similarity = new PositionSimilarity();
 
-    public PositionSimilarityProvider(String name, Settings settings, Settings indexSettings) {
+    public PositionSimilarityProvider(String name, Settings settings, Settings indexSettings, ScriptService scriptService) {
         super(name);
     }
 
