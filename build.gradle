@@ -25,9 +25,6 @@ buildscript {
 apply plugin: 'idea'
 apply plugin: 'elasticsearch.esplugin'
 
-// TODO: will be fixed in 6.0
-ext.projectSubstitutions = [:]
-
 licenseFile = rootProject.file('LICENSE.txt')
 noticeFile = rootProject.file('NOTICE.txt')
 
@@ -44,6 +41,3 @@ esplugin {
 
 test.enabled = false
 integTest.enabled = false
-
-// TODO: temporary workaround until it's fixed in elasticsearch
-thirdPartyAudit.enabled = false
