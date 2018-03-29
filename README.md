@@ -10,9 +10,13 @@ Elasticsearch custom similarity plugin to calculate score based on term position
 
 ## Build
 
-./gradlew clean assemble
+    ./gradlew clean assemble
 
-Note, that versions 6.2.x require Java 9.
+Note, that versions 6.2.x require Java 9. Or with Docker:
+
+    docker run -ti --rm -v $PWD:/opt/elasticsearch-position-similarity -w /opt/elasticsearch-position-similarity  --user root gradle:4.5-jdk9 ./gradlew clean assemble
+
+ZIP can be found at ``./build/distributions/elasticsearch-position-similarity-6.2.x.zip``
 
 ## Install
 
