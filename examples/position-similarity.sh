@@ -44,19 +44,17 @@ curl --header "Content-Type:application/json" -s -XPUT "http://localhost:9200/te
 }
 '
 
-curl --header "Content-Type:application/json" -XPUT 'localhost:9200/test_index/test_type/_mapping' -d '
+curl --header "Content-Type:application/json" -XPUT 'localhost:9200/test_index/_mapping/test_type' -d '
 {
-  "test_type": {
-    "properties": {
-      "field1": {
-        "type": "text"
-      },
-      "field2": {
-        "type": "text",
-        "term_vector": "with_positions_offsets_payloads",
-        "analyzer": "positionPayloadAnalyzer",
-        "similarity": "positionSimilarity"
-      }
+  "properties": {
+    "field1": {
+      "type": "text"
+    },
+    "field2": {
+      "type": "text",
+      "term_vector": "with_positions_offsets_payloads",
+      "analyzer": "positionPayloadAnalyzer",
+      "similarity": "positionSimilarity"
     }
   }
 }

@@ -15,7 +15,7 @@
 package org.elasticsearch.plugin;
 
 import org.elasticsearch.index.IndexModule;
-import org.elasticsearch.index.similarity.PositionSimilarityProvider;
+import org.elasticsearch.index.similarity.PositionSimilarity;
 import org.elasticsearch.plugins.Plugin;
 
 public class PositionSimilarityPlugin extends Plugin {
@@ -28,6 +28,6 @@ public class PositionSimilarityPlugin extends Plugin {
     }
 
     public void onIndexModule(IndexModule indexModule) {
-        indexModule.addSimilarity("position-similarity", PositionSimilarityProvider::new);
+        indexModule.addSimilarity("position-similarity", PositionSimilarity::new);
     }
 }

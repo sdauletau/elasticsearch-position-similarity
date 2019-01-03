@@ -14,6 +14,7 @@
 
 package org.elasticsearch.index.similarity;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.lucene.analysis.payloads.PayloadHelper;
 import org.apache.lucene.index.*;
 import org.apache.lucene.search.CollectionStatistics;
@@ -21,14 +22,16 @@ import org.apache.lucene.search.Explanation;
 import org.apache.lucene.search.TermStatistics;
 import org.apache.lucene.search.similarities.Similarity;
 import org.apache.lucene.util.BytesRef;
-import org.elasticsearch.common.logging.Loggers;
+import org.elasticsearch.Version;
+import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.script.ScriptService;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class PositionSimilarity extends Similarity {
-    public PositionSimilarity() {
+    public PositionSimilarity(Settings settings, Version version, ScriptService scriptService) {
     }
 
     public long computeNorm(FieldInvertState state) {
@@ -104,9 +107,14 @@ public class PositionSimilarity extends Similarity {
             int maxPosition = 20;
             try {
                 Terms terms = context.reader().getTermVector(doc, weight.field);
+                if (terms == null) {
+                    LogManager.getLogger(this.getClass()).error("getTermVector failed, returning default position = " +
+                            maxPosition + " for field = " + weight.field);
+                    return maxPosition;
+                }
                 TermsEnum termsEnum = terms.iterator();
                 if (!termsEnum.seekExact(term)) {
-                    Loggers.getLogger(this.getClass()).error("seekExact failed, returning default position = " +
+                    LogManager.getLogger(this.getClass()).error("seekExact failed, returning default position = " +
                             maxPosition + " for field = " + weight.field);
                     return maxPosition;
                 }
@@ -115,13 +123,17 @@ public class PositionSimilarity extends Similarity {
                 dpEnum.nextPosition();
                 BytesRef payload = dpEnum.getPayload();
                 if (payload == null) {
-                    Loggers.getLogger(this.getClass()).error("getPayload failed, returning default position = " +
+                    LogManager.getLogger(this.getClass()).error("getPayload failed, returning default position = " +
                             maxPosition + " for field = " + weight.field);
                     return maxPosition;
                 }
                 return PayloadHelper.decodeInt(payload.bytes, payload.offset);
+            } catch (UnsupportedOperationException ex) {
+                LogManager.getLogger(this.getClass()).error("Unsupported operation, returning default position = " +
+                        maxPosition + " for field = " + weight.field, ex);
+                return maxPosition;
             } catch (Exception ex) {
-                Loggers.getLogger(this.getClass()).error("Unexpected exception, returning default position = " +
+                LogManager.getLogger(this.getClass()).error("Unexpected exception, returning default position = " +
                         maxPosition + " for field = " + weight.field, ex);
                 return maxPosition;
             }
