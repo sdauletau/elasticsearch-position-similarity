@@ -14,20 +14,20 @@
 
 package org.elasticsearch.plugin;
 
-import org.elasticsearch.index.IndexModule;
-import org.elasticsearch.index.similarity.PositionSimilarity;
+import org.elasticsearch.index.query.PositionMatchQuery;
+import org.elasticsearch.index.query.PositionMatchQueryBuilder;
 import org.elasticsearch.plugins.Plugin;
+import org.elasticsearch.plugins.SearchPlugin;
 
-public class PositionSimilarityPlugin extends Plugin {
-    public String name() {
-        return "elasticsearch-position-similarity";
+import java.util.List;
+
+import static java.util.Collections.singletonList;
+
+public class PositionSimilarityPlugin extends Plugin implements SearchPlugin {
+
+    @Override
+    public List<QuerySpec<?>> getQueries() {
+        return singletonList(new QuerySpec<>(PositionMatchQuery.NAME, PositionMatchQueryBuilder::new, PositionMatchQueryBuilder::fromXContent));
     }
 
-    public String description() {
-        return "Elasticsearch scoring plugin based on matching a term or a phrase relative to a position of the term in a searched field.";
-    }
-
-    public void onIndexModule(IndexModule indexModule) {
-        indexModule.addSimilarity("position-similarity", PositionSimilarity::new);
-    }
 }

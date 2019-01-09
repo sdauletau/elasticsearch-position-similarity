@@ -204,42 +204,42 @@ Note, that explanation is part of Lucene API and doc mentioned in explanation is
 
 ```json
 {
-  "value" : 1.4142135,
+  "query" : 1.4142135,
   "description" : "weight(field1:foo in 2) [PerFieldSimilarity], result of:",
   "details" : [
     {
-      "value" : 1.4142135,
+      "query" : 1.4142135,
       "description" : "fieldWeight in 2, product of:",
       "details" : [
         {
-          "value" : 1.4142135,
+          "query" : 1.4142135,
           "description" : "tf(freq=2.0), with freq of:",
           "details" : [
             {
-              "value" : 2.0,
+              "query" : 2.0,
               "description" : "termFreq=2.0",
               "details" : [ ]
             }
           ]
         },
         {
-          "value" : 1.0,
+          "query" : 1.0,
           "description" : "idf, computed as log((docCount+1)/(docFreq+1)) + 1 from:",
           "details" : [
             {
-              "value" : 4.0,
+              "query" : 4.0,
               "description" : "docFreq",
               "details" : [ ]
             },
             {
-              "value" : 4.0,
+              "query" : 4.0,
               "description" : "docCount",
               "details" : [ ]
             }
           ]
         },
         {
-          "value" : 1.0,
+          "query" : 1.0,
           "description" : "fieldNorm(doc=2)",
           "details" : [ ]
         }
@@ -610,15 +610,15 @@ Note, that explanation is part of Lucene API and doc mentioned in explanation is
 
 ```json
 {
-  "value" : 1.0,
+  "query" : 1.0,
   "description" : "weight(field2:foo in 1) [PerFieldSimilarity], result of:",
   "details" : [
     {
-      "value" : 1.0,
+      "query" : 1.0,
       "description" : "position score(doc=1, freq=1.0), sum of:",
       "details" : [
         {
-          "value" : 1.0,
+          "query" : 1.0,
           "description" : "score(boost=1.0, pos=0, func=1.0*5.0/(5.0+0))",
           "details" : [ ]
         }
