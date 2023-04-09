@@ -8,4 +8,5 @@ target
 .DS_Score
 .bloop
 .metals
+.vscode
 bin
