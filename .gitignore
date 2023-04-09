@@ -6,3 +6,6 @@ build
 .gradle
 target
 .DS_Score
+.bloop
+.metals
+bin
