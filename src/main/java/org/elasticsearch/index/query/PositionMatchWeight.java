@@ -18,6 +18,7 @@ import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Explanation;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.QueryVisitor;
 import org.apache.lucene.search.Weight;
 
 import java.io.IOException;
@@ -25,15 +26,23 @@ import java.util.Set;
 
 public class PositionMatchWeight extends Weight {
     final Weight weight;
+    final Query query;
 
     PositionMatchWeight(Query query, Weight weight) {
         super(query);
         this.weight = weight;
+        this.query = query;
     }
 
     @Override
     public void extractTerms(Set<Term> terms) {
-        weight.extractTerms(terms);
+        // extractTerms is depricated
+        // weight.extractTerms(); 
+        collectTerms(terms);
+    }
+
+    public void collectTerms(Set<Term> terms) {
+        query.visit(QueryVisitor.termCollector(terms));
     }
 
     @Override
@@ -48,6 +57,6 @@ public class PositionMatchWeight extends Weight {
 
     @Override
     public boolean isCacheable(LeafReaderContext context) {
-        return false; //weight.isCacheable(context);
+        return false;
     }
 }

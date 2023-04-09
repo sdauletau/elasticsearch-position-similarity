@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  es:
+    image: elasticsearch-position-similarity:${ES_VERSION}
+    container_name: es
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile
+      args:
+        - ES_VERSION
+    environment:
+      - node.name=es
+      - cluster.name=es-cluster
+      - discovery.type=single-node
+    ports:
+      - 9200:9200

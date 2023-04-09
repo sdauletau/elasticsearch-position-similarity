@@ -14,30 +14,28 @@
 
 buildscript {
     repositories {
-        mavenCentral()
-        jcenter()
+        gradlePluginPortal()
     }
+
+    def es_version = rootProject.file('VERSION.txt').text.trim().split("=")[1]
+
     dependencies {
-        classpath "org.elasticsearch.gradle:build-tools:${rootProject.file('VERSION.txt').text.trim()}"
+        classpath "org.elasticsearch.gradle:build-tools:${es_version}"
     }
 }
 
-apply plugin: 'idea'
+repositories {
+    mavenCentral()
+}
+
 apply plugin: 'elasticsearch.esplugin'
-
-licenseFile = rootProject.file('LICENSE.txt')
-noticeFile = rootProject.file('NOTICE.txt')
-
-version = rootProject.file('VERSION.txt').text.trim()
 
 esplugin {
     description 'Elasticsearch scoring plugin based on matching a term or a phrase relative to a position of the term in a searched field.'
     classname 'org.elasticsearch.plugin.PositionSimilarityPlugin'
-    name project.name
-    version project.version
+    name 'elasticsearch-position-similarity'
     licenseFile rootProject.file('LICENSE.txt')
     noticeFile rootProject.file('NOTICE.txt')
 }
 
 test.enabled = false
-integTest.enabled = false

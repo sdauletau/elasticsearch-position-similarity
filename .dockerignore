@@ -1,0 +1,19 @@
+# Exclude everything:
+#
+*
+
+# Un-exclude what we need:
+#
+!gradle
+!examples
+!scripts
+!src
+!build.gradle
+!gradle.properties
+!gradlew
+!LICENSE.txt
+!NOTICE.txt
+!VERSION.txt
+
+# Exclude what we don't need:
+#

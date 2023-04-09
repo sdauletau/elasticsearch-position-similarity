@@ -8,22 +8,34 @@
 
 Elasticsearch custom similarity plugin to calculate score based on term position and payload so that terms closer to the beginning of a field have higher scores.
 
-## Build
+## Build docker image with Elasticsearch and plugin
+```bash
+git clone https://github.com/sdauletau/elasticsearch-position-similarity.git
+cd elasticsearch-position-similarity
+./docker/compose-build.sh
+```
 
-./gradlew clean assemble
+## Start docker container with Elasticsearch and plugin
+```bash
+./docker/compose-up.sh
+```
 
-Note, that Elasticsearch 7.x requires Java 12.
+## Review container logs
+```bash
+./docker/compose-logs.sh
+```
 
-## Install
+## Connect to docker container shell and run examples
+```bash
+./docker/compose-exec.sh
+```
 
-Run ./scripts/install-plugin.sh
+## Stop docker container with Elasticsearch and plugin
+```bash
+./docker/compose-down.sh
+```
 
-Re-start elasticsearch
-
-## Examples
-
-Run ./examples/position-similarity.sh
-
+---
 
 # Advanced Scoring with Elasticsearch Similarity Plugins
 
@@ -55,7 +67,20 @@ score(q,d) =
     ) (t in q)
 ```
 
->Let's index some documents, run a match query and look at explanation.
+---
+Let's index some documents, run a match query and look at the explanation.
+
+## Build docker image with Elasticsearch and plugin
+```bash
+git clone https://github.com/sdauletau/elasticsearch-position-similarity.git
+cd elasticsearch-position-similarity
+./docker/compose-build.sh
+```
+
+## Start docker container with Elasticsearch and plugin
+```bash
+./docker/compose-up.sh
+```
 
 ## Create Elasticsearch Index
 
@@ -117,7 +142,6 @@ doc id|foo freq|doc length
 2|1|3
 3|2|4
 
-
 ## Match Query
 
 ```bash
@@ -131,7 +155,6 @@ curl --header "Content-Type:application/json" -s "localhost:9200/test_index/_sea
 }
 '
 ```
-
 
 ## Match Query Results
 
@@ -180,7 +203,6 @@ curl --header "Content-Type:application/json" -s "localhost:9200/test_index/_sea
 
 - Document 1 and 2 have the same foo frequency but Document 1 has less terms.
 
-
 ## Match Query Explanation
 
 ```bash
@@ -196,7 +218,7 @@ curl --header "Content-Type:application/json" -s "localhost:9200/test_index/_sea
 '
 ```
 
-Note, that explanation is part of Lucene API and doc mentioned in explanation is a Lucene document id and it has nothing to do with Elacticsearch _id field.
+Note, that explanation is part of Lucene API. Document id mentioned in explanation is a Lucene document id and it can be different from Elacticsearch _id field.
 
 ```json
 {
@@ -280,21 +302,6 @@ Similarity plugins extend Elasticsearch by adding new similarities (scoring/rank
 There are several steps necessary to implement a scoring plugin that will **use term positions and payloads** and **ignore term frequency, inverse document frequency and normalization**.
 
 >TODO: Needs explanation
-
-## Build and Install Plugin
-
-```bash
-git clone -b 7.0.0 https://github.com/sdauletau/elasticsearch-position-similarity.git elasticsearch-position-similarity
-
-cd elasticsearch-position-similarity
-
-./gradlew clean assemble
-
-/usr/local/opt/elasticsearch-7.0.0/bin/elasticsearch-plugin install file:///`pwd`/build/distributions/elasticsearch-position-similarity-7.0.0.zip
-```
-
-**IMPORTANT**: Restart Elasticsearch.
-
 
 ## Create Elasticsearch Index
 
@@ -381,7 +388,6 @@ doc id|foo freq|doc length|foo position
 2|1|3|0
 3|2|4|2
 
-
 ## Match Query
 
 ```bash
@@ -399,7 +405,6 @@ curl --header "Content-Type:application/json" -s "localhost:9200/test_index/_sea
 }
 '
 ```
-
 
 ## Match Query Results
 
@@ -449,7 +454,6 @@ curl --header "Content-Type:application/json" -s "localhost:9200/test_index/_sea
 
 - Document 2 has the highest score because term foo has the lowest position.
 
-
 ## Match Query Explanation
 
 ```bash
@@ -469,7 +473,7 @@ curl --header "Content-Type:application/json" -s "localhost:9200/test_index/_sea
 '
 ```
 
-Note, that explanation is part of Lucene API and doc mentioned in explanation is a Lucene document id and it has nothing to do with Elacticsearch _id field.
+Note, that explanation is part of Lucene API. Document id mentioned in explanation is a Lucene document id and it can be different from Elacticsearch _id field.
 
 ```json
 {

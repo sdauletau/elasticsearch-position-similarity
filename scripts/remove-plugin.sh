@@ -1,5 +1,5 @@
 #!/bin/sh
 
-version=$(cat ./VERSION.txt)
+set -eux
 
-/usr/local/opt/elasticsearch-${version}/bin/elasticsearch-plugin remove elasticsearch-position-similarity
+/usr/share/elasticsearch/bin/elasticsearch-plugin remove elasticsearch-position-similarity

@@ -1,5 +1,5 @@
 #!/bin/sh
 
-version=$(cat ./VERSION.txt)
+set -eux
 
-/usr/local/opt/elasticsearch-${version}/bin/elasticsearch-plugin install file:///`pwd`/build/distributions/elasticsearch-position-similarity-${version}.zip
+/usr/share/elasticsearch/bin/elasticsearch-plugin install file:///${PWD}/build/distributions/elasticsearch-position-similarity.zip
