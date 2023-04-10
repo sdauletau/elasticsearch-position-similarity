@@ -19,6 +19,7 @@ import org.apache.lucene.analysis.payloads.PayloadHelper;
 import org.apache.lucene.index.*;
 import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.search.Explanation;
+import org.apache.lucene.search.QueryVisitor;
 import org.apache.lucene.search.Scorer;
 import org.apache.lucene.util.BytesRef;
 
@@ -57,7 +58,7 @@ public class PositionMatchScorer extends Scorer {
         float totalScore = 0.0f;
 
         Set<Term> terms = new HashSet<>();
-        weight.extractTerms(terms);
+        weight.getQuery().visit(QueryVisitor.termCollector(terms));
 
         for (Term term : terms) {
             totalScore += scoreTerm(doc, term);
@@ -72,7 +73,7 @@ public class PositionMatchScorer extends Scorer {
         float totalScore = 0.0f;
 
         Set<Term> terms = new HashSet<>();
-        weight.extractTerms(terms);
+        weight.getQuery().visit(QueryVisitor.termCollector(terms));
 
         for (Term term : terms) {
             Explanation termExplanation = explainTerm(docID, term);
@@ -117,14 +118,26 @@ public class PositionMatchScorer extends Scorer {
 
     private int position(int docID, Term term) {
         try {
-            Terms terms = context.reader().getTermVector(docID, term.field());
+            TermVectors termVectors = context.reader().termVectors();
+            if (termVectors == null) {
+                return NOT_FOUND_POSITION;
+            }
+
+            Fields vectors = termVectors.get(docID);
+            if (vectors == null) {
+                return NOT_FOUND_POSITION;
+            }
+
+            Terms terms = vectors.terms(term.field());
             if (terms == null) {
                 return NOT_FOUND_POSITION;
             }
+
             TermsEnum termsEnum = terms.iterator();
             if (!termsEnum.seekExact(term.bytes())) {
                 return NOT_FOUND_POSITION;
             }
+
             PostingsEnum dpEnum = termsEnum.postings(null, PostingsEnum.ALL);
             dpEnum.nextDoc();
             dpEnum.nextPosition();
@@ -132,6 +145,7 @@ public class PositionMatchScorer extends Scorer {
             if (payload == null) {
                 return NOT_FOUND_POSITION;
             }
+            
             return PayloadHelper.decodeInt(payload.bytes, payload.offset);
         } catch (UnsupportedOperationException ex) {
             LogManager.getLogger(this.getClass()).error("Unsupported operation, returning position = " +

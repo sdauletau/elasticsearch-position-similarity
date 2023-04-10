@@ -15,6 +15,7 @@
 package org.elasticsearch.index.query;
 
 import org.apache.lucene.search.Query;
+import org.elasticsearch.TransportVersion;
 import org.elasticsearch.common.io.stream.StreamInput;
 import org.elasticsearch.common.io.stream.StreamOutput;
 import org.elasticsearch.xcontent.XContentBuilder;
@@ -60,7 +61,7 @@ public class PositionMatchQueryBuilder extends AbstractQueryBuilder<PositionMatc
     protected void doXContent(XContentBuilder builder, Params params) throws IOException {
         builder.startObject(PositionMatchQuery.NAME);
         queryBuilder.toXContent(builder, params);
-        printBoostAndQueryName(builder);
+        boostAndQueryNameToXContent(builder);
         builder.endObject();
     }
 
@@ -83,5 +84,10 @@ public class PositionMatchQueryBuilder extends AbstractQueryBuilder<PositionMatc
     @Override
     public String getWriteableName() {
         return PositionMatchQuery.NAME;
+    }
+
+    @Override
+    public TransportVersion getMinimalSupportedVersion() {
+        return TransportVersion.MINIMUM_COMPATIBLE;
     }
 }

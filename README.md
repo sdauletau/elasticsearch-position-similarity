@@ -27,7 +27,7 @@ cd elasticsearch-position-similarity
 
 ## Connect to docker container shell and run examples
 ```bash
-./docker/compose-exec.sh
+./docker/compose-test.sh
 ```
 
 ## Stop docker container with Elasticsearch and plugin

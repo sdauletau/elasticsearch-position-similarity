@@ -17,6 +17,7 @@ package org.elasticsearch.index.query;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.QueryVisitor;
 import org.apache.lucene.search.ScoreMode;
 import org.apache.lucene.search.Weight;
 
@@ -64,5 +65,10 @@ public class PositionMatchQuery extends Query {
     @Override
     public int hashCode() {
         return Objects.hash(classHash(), query);
+    }
+
+    @Override
+    public void visit(QueryVisitor visitor) {
+        query.visit(visitor);
     }
 }

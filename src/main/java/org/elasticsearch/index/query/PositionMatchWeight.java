@@ -34,13 +34,6 @@ public class PositionMatchWeight extends Weight {
         this.query = query;
     }
 
-    @Override
-    public void extractTerms(Set<Term> terms) {
-        // extractTerms is depricated
-        // weight.extractTerms(); 
-        collectTerms(terms);
-    }
-
     public void collectTerms(Set<Term> terms) {
         query.visit(QueryVisitor.termCollector(terms));
     }
