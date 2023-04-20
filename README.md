@@ -82,6 +82,11 @@ cd elasticsearch-position-similarity
 ./docker/compose-up.sh
 ```
 
+## Connect to docker container shell and run examples
+```bash
+./docker/compose-bash.sh
+```
+
 ## Create Elasticsearch Index
 
 ```bash
