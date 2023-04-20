@@ -13,8 +13,19 @@ services:
       - node.name=es
       - cluster.name=es-cluster
       - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - mem_limit=2048m
       - xpack.security.enabled=false
       - xpack.security.http.ssl.enabled=false
       - xpack.security.transport.ssl.enabled=false
     ports:
       - 9200:9200
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+
+volumes:
+  esdata:
